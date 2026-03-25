@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mari Kopi Shop ☕</title>
+  <meta name="description" content="Mari Kopi Shop — Kopi Premium & Minuman Specialty. Order via WhatsApp." />
+  <meta name="theme-color" content="#0a0500" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<canvas id="particles" aria-hidden="true"></canvas>
+<div id="meteorContainer" aria-hidden="true"></div>
+<button id="scrollTopBtn" aria-label="Scroll ke atas">↑</button>
+
+<!-- LIVE ORDER NOTIFICATION -->
+<div id="liveOrderBanner">
+  <div class="lob-head">
+    <span class="lob-dot"></span>
+    <span class="lob-label">📢 Pesanan Masuk</span>
+    <span class="lob-time" id="lobTime"></span>
+  </div>
+  <div class="lob-body">
+    <div class="lob-row">
+      <span class="lob-name" id="lobName"></span>
+      <span class="lob-sep">•</span>
+      <span class="lob-table" id="lobTable"></span>
+    </div>
+    <div class="lob-items" id="lobItems"></div>
+    <div class="lob-total" id="lobTotal"></div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <div class="lb-content" onclick="event.stopPropagation()">
+    <div class="lb-emoji" id="lbEmoji"></div>
+    <div class="lb-info">
+      <h3 id="lbName"></h3>
+      <p id="lbDesc"></p>
+      <div class="lb-price" id="lbPrice"></div>
+      <div class="lb-actions">
+        <button class="lb-minus" onclick="lbChangeQty(-1)">−</button>
+        <span class="lb-qty" id="lbQty">0</span>
+        <button class="lb-plus" onclick="lbChangeQty(1)">+</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROMO MODAL -->
+<div class="promo-modal-overlay" id="promoModal" onclick="if(event.target===this)closePromoModal()">
+  <div class="promo-modal-box" id="pmModal">
+    <button class="pm-close" onclick="closePromoModal()">✕</button>
+    <div id="pmTag" class="pm-tag"></div>
+    <div id="pmEmoji" class="pm-emoji"></div>
+    <div id="pmBadge" class="pm-badge-big"></div>
+    <h2 id="pmTitle" class="pm-title"></h2>
+    <p id="pmSubtitle" class="pm-subtitle"></p>
+    <div id="pmDesc" class="pm-desc"></div>
+    <div id="pmValid" class="pm-valid">🕐 <span></span></div>
+    <button class="pm-order-btn" onclick="closePromoModal();document.getElementById('menu').scrollIntoView({behavior:'smooth'})">
+      ☕ Pesan Sekarang
+    </button>
+  </div>
+</div>
+
+<!-- SIDENAV -->
+<div id="sidenav" class="sidenav">
+  <div class="sidenav-inner">
+    <button class="sidenav-close" id="closeNav" aria-label="Tutup menu">✕</button>
+    <div class="sidenav-logo">
+      <img src="logo.png" alt="Mari Kopi Shop Logo" />
+      <span class="logo-name">Mari Kopi Shop</span>
+      <span class="logo-sub">Kopi Premium & Specialty</span>
+    </div>
+    <nav>
+      <a href="#home" onclick="closeNav()"><span class="nav-icon">🏠</span> Home</a>
+      <a href="#" onclick="closeNav();switchView('promo')"><span class="nav-icon">🔥</span> Promo</a>
+      <a href="#best" onclick="closeNav()"><span class="nav-icon">⭐</span> Best Seller</a>
+      <a href="#" onclick="closeNav();switchView('menu');document.getElementById('mainContent').scrollIntoView({behavior:'smooth'})"><span class="nav-icon">☕</span> Menu Kopi</a>
+      <a href="#testimonials" onclick="closeNav()"><span class="nav-icon">💬</span> Testimoni</a>
+      <a href="https://wa.me/+6282275033270" target="_blank" rel="noopener">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </span>
+        WhatsApp Order
+      </a>
+      <a href="https://t.me/ridwanbalista" target="_blank" rel="noopener">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="#2AABEE"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        </span>
+        Telegram @ridwanbalista
+      </a>
+    </nav>
+    <div class="sidenav-footer">Mari Kopi Shop &copy; 2025</div>
+  </div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <header id="home">
+    <div class="header-bar">
+      <button class="hamburger" id="openNav" aria-label="Buka menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="header-brand">
+        <div class="brand-logo">
+          <img src="logo.png" alt="Mari Kopi Shop" />
+        </div>
+        <div class="brand-text">
+          <h1 class="shine-text">Mari Kopi Shop</h1>
+          <p>Kopi Premium & Specialty</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-icon" id="btnHistory" aria-label="History">
+          📋 <span class="history-badge" id="historyBadge" style="display:none">0</span>
+        </button>
+        <button class="btn-icon" id="btnCart" aria-label="Keranjang">
+          🛒 <span class="cart-badge" id="cartBadge" style="display:none">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- HERO SLIDER -->
+    <div class="hero-slider" id="heroSlider">
+      <div class="slide active" style="--slide-bg:linear-gradient(135deg,#0d0600 0%,#3d1800 45%,#1a0800 100%)">
+        <div class="slide-content">
+          <div class="slide-tag">☕ Kopi Spesial</div>
+          <h2>Kopi Susu<br><span>Aren Premium</span></h2>
+          <p>Gula aren asli + espresso fresh<br>Manis alami, bikin nagih!</p>
+          <a href="#" onclick="switchView('menu');document.getElementById('mainContent').scrollIntoView({behavior:'smooth'});return false" class="slide-cta">Pesan Sekarang ↓</a>
+        </div>
+        <div class="slide-visual">🍯</div>
+      </div>
+      <div class="slide" style="--slide-bg:linear-gradient(135deg,#050505 0%,#1a1000 45%,#050505 100%)">
+        <div class="slide-content">
+          <div class="slide-tag">🧋 Menu Hits</div>
+          <h2>Brown Sugar<br><span>Boba Latte</span></h2>
+          <p>Boba kenyal + brown sugar<br>Instagrammable &amp; delicious!</p>
+          <a href="#" onclick="switchView('menu');document.getElementById('mainContent').scrollIntoView({behavior:'smooth'});return false" class="slide-cta">Coba Sekarang ↓</a>
+        </div>
+        <div class="slide-visual">🧋</div>
+      </div>
+      <div class="slide" style="--slide-bg:linear-gradient(135deg,#060308 0%,#1a0a28 45%,#060308 100%)">
+        <div class="slide-content">
+          <div class="slide-tag">🫖 Manual Brew</div>
+          <h2>Pour Over<br><span>V60 Single Origin</span></h2>
+          <p>Clean, bright, floral notes<br>Brewed fresh setiap order</p>
+          <a href="#" onclick="switchView('menu');document.getElementById('mainContent').scrollIntoView({behavior:'smooth'});return false" class="slide-cta">Lihat Menu ↓</a>
+        </div>
+        <div class="slide-visual">🫖</div>
+      </div>
+      <div class="slide" style="--slide-bg:linear-gradient(135deg,#030a0f 0%,#0a2030 45%,#030a0f 100%)">
+        <div class="slide-content">
+          <div class="slide-tag">✨ NEW</div>
+          <h2>Nitro<br><span>Cold Brew</span></h2>
+          <p>Nitrogen infused · Velvet texture<br>Premium tanpa susu!</p>
+          <a href="#" onclick="switchView('menu');document.getElementById('mainContent').scrollIntoView({behavior:'smooth'});return false" class="slide-cta">Order Sekarang ↓</a>
+        </div>
+        <div class="slide-visual">✨</div>
+      </div>
+      <div class="slide" style="--slide-bg:linear-gradient(135deg,#020a02 0%,#0d200d 45%,#020a02 100%)">
+        <div class="slide-content">
+          <div class="slide-tag">🌿 Non-Coffee</div>
+          <h2>Matcha<br><span>Ceremonial Grade</span></h2>
+          <p>Premium Japanese matcha<br>Earthy, smooth, & healthy!</p>
+          <a href="#" onclick="switchView('menu');document.getElementById('mainContent').scrollIntoView({behavior:'smooth'});return false" class="slide-cta">Coba Sekarang ↓</a>
+        </div>
+        <div class="slide-visual">🍵</div>
+      </div>
+      <div class="slider-dots" id="sliderDots"></div>
+      <button class="slider-arrow prev" onclick="slideMove(-1)">&#8249;</button>
+      <button class="slider-arrow next" onclick="slideMove(1)">&#8250;</button>
+    </div>
+  </header>
+
+  <!-- BEST SECTION -->
+  <section id="best" class="best-section">
+    <div class="best-section-title">
+      <h2>⭐ Pilihan Terbaik</h2>
+      <p>Favorit pelanggan setia kami</p>
+    </div>
+    <div class="best-slider-wrap">
+      <div class="best-slider-track" id="bestTrack"></div>
+    </div>
+    <div class="best-nav">
+      <button class="best-nav-btn" onclick="moveBest(-1)">&#8249;</button>
+      <div class="best-nav-dots" id="bestDots"></div>
+      <button class="best-nav-btn" onclick="moveBest(1)">&#8250;</button>
+    </div>
+  </section>
+
+  <!-- ORDER FORM -->
+  <section class="order-form-section" id="orderForm">
+    <div class="order-form-inner">
+      <h3>📝 Informasi Pemesan</h3>
+      <div class="form-grid">
+        <div class="fg" id="nameField">
+          <label for="custName">Nama <span class="req">*</span></label>
+          <input type="text" id="custName" placeholder="Nama lengkap kamu..." autocomplete="off" />
+          <span class="error-msg" id="nameError">⚠️ Nama wajib diisi!</span>
+        </div>
+        <div class="fg" id="tableField">
+          <label for="custTable">Meja / Lokasi <span class="req">*</span></label>
+          <input type="text" id="custTable" placeholder="Meja 3 / Take Away" autocomplete="off" />
+          <span class="error-msg" id="tableError">⚠️ Wajib diisi!</span>
+        </div>
+      </div>
+      <div class="fg">
+        <label for="custNote">Catatan Tambahan</label>
+        <textarea id="custNote" rows="2" placeholder="Less sugar, hot/iced, extra shot, dll..."></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABS -->
+  <section id="mainContent">
+    <div class="view-tabs">
+      <button class="tab-btn active" id="btnViewMenu" onclick="switchView('menu')">☕ Menu Kopi</button>
+      <button class="tab-btn" id="btnViewPromo" onclick="switchView('promo')">🔥 Promo (8)</button>
+    </div>
+
+    <!-- MENU VIEW -->
+    <div id="viewMenu" class="main-content-section">
+      <div class="section-header" id="menu">
+        <h2>☕ Menu Kami</h2>
+        <div class="search-wrap">
+          <input type="text" id="searchInput" placeholder="🔍 Cari menu..." oninput="filterMenu()" />
+        </div>
+      </div>
+      <div class="menu-hint">💡 Tap menu untuk detail &amp; tambah ke keranjang</div>
+      <div id="menuContainer"></div>
+    </div>
+
+    <!-- PROMO VIEW -->
+    <div id="viewPromo" class="main-content-section" style="display:none">
+      <div class="section-header">
+        <h2>🔥 Promo &amp; Penawaran</h2>
+      </div>
+      <div class="menu-hint">💡 Tap promo untuk lihat detail lengkap</div>
+      <div class="promo-container" id="promoContainer"></div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials" class="testimonials-section">
+    <div class="testimonials-title">
+      <h2>⭐ Testimoni Pelanggan</h2>
+      <p>Apa kata mereka tentang Mari Kopi Shop?</p>
+    </div>
+    <div class="testi-slider-wrap">
+      <div class="testi-track" id="testiTrack"></div>
+    </div>
+    <div class="testi-nav" id="testiDots"></div>
+  </section>
+
+  <!-- CHECKOUT BAR -->
+  <div class="checkout-bar" id="checkoutBar">
+    <div class="checkout-bar-inner">
+      <div class="checkout-total">
+        <span>Total Pesanan</span>
+        <strong id="barTotal">฿ 0</strong>
+      </div>
+      <div class="checkout-btns">
+        <button class="btn-wa" onclick="checkoutWA()">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </button>
+        <button class="btn-tg" onclick="checkoutTG()">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="#fff"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          Telegram
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- CART MODAL -->
+<div class="modal-overlay" id="cartModal" onclick="handleModalClick(event,'cartModal')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>🛒 Keranjang Pesanan</h3>
+      <button class="modal-close" onclick="toggleModal('cartModal')">✕</button>
+    </div>
+    <div class="modal-body" id="cartBody">
+      <div class="empty-state">Keranjang kosong.<br>Pilih kopi dulu! ☕</div>
+    </div>
+    <div class="modal-foot" id="cartFoot" style="display:none">
+      <div class="total-row"><span>Total:</span><strong id="cartTotal">฿ 0</strong></div>
+      <button class="btn-wa full" onclick="checkoutWA()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Order via WhatsApp
+      </button>
+      <button class="btn-tg full" onclick="checkoutTG()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="#fff"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        Order via Telegram
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="historyModal" onclick="handleModalClick(event,'historyModal')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3>📋 History Pemesanan</h3>
+      <div style="display:flex;gap:7px;align-items:center">
+        <button class="btn-danger-sm" onclick="clearHistory()">🗑 Hapus</button>
+        <button class="modal-close" onclick="toggleModal('historyModal')">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="historyBody">
+      <div class="empty-state">Belum ada history pemesanan.</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <img src="logo.png" alt="Mari Kopi Shop" />
+    </div>
+    <div class="footer-brand">Mari Kopi Shop</div>
+    <div class="footer-tagline">Kopi Premium, Rasa Istimewa, Harga Terjangkau</div>
+    <div class="footer-socials">
+      <a href="https://wa.me/+6282275033270" target="_blank" rel="noopener" class="social-link wa">
+        <div class="social-icon">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </div>
+        <div class="social-info">
+          <div class="social-label">WhatsApp Order</div>
+          <div class="social-value">+62 822-7503-3270</div>
+        </div>
+        <div class="social-arrow">→</div>
+      </a>
+      <a href="https://t.me/ridwanbalista" target="_blank" rel="noopener" class="social-link tg">
+        <div class="social-icon">
+          <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        </div>
+        <div class="social-info">
+          <div class="social-label">Telegram</div>
+          <div class="social-value">@ridwanbalista</div>
+        </div>
+        <div class="social-arrow">→</div>
+      </a>
+    </div>
+    <div class="footer-copy">&copy; 2025 Mari Kopi Shop. All rights reserved.</div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
